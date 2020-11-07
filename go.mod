@@ -1,4 +1,4 @@
-module ginLogger
+module github.com/AverageJoeWang/ginLogger
 
 go 1.15
 
