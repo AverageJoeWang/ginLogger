@@ -28,7 +28,7 @@ go get github.com/AverageJoeWang/ginLogger
   "log": {
     "level": "INFO",
     "filename": "app.log",
-    "log_format": "console",
+    "log_format": "json",
     "maxsize": 200,
     "max_age": 7,
     "max_backups": 10,
@@ -39,17 +39,27 @@ go get github.com/AverageJoeWang/ginLogger
 ```
 
 ```go
-// Conf 全局配置变量
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/AverageJoeWang/ginLogger"
+	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
+)
+
 var Conf = new(Config)
 
-// Config 整个项目的配置
+// Config
 type Config struct {
 	Mode                 string `json:"mode"`
 	Port                 int    `json:"port"`
 	*ginLogger.LogConfig `json:"log"`
 }
 
-// Init 初始化配置；从指定文件加载配置文件
+// Init
 func Init(filePath string) error {
 	b, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -74,9 +84,7 @@ func main() {
 		ginLogger.Debug(c, "this is hello")
 		c.String(http.StatusOK, "hello AverageJoeWang\n")
 	})
-
-	addr := fmt.Sprintf(":%v", Conf.Port)
-	r.Run(addr)
+	r.Run(":8180")
 }
 ```
 

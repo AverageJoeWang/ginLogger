@@ -109,7 +109,7 @@ func getEncoder(config *LogConfig) zapcore.Encoder {
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
 	if config.LogFormat == "json" {
 		return zapcore.NewJSONEncoder(encoderConfig)
-	}else {
+	} else {
 		return zapcore.NewConsoleEncoder(encoderConfig)
 	}
 }
