@@ -10,7 +10,7 @@ gin-logger middleware based on zap,lumberjack
 + [ ] Allow custom field and print in every log
 + [X] Easy to use
 + [X] Allow manage log file name,size,backups,print format
-+ [] Fixed parameters, also get resId from gateway
++ [ ] Fixed parameters, also get resId from gateway
 + [X] Support json/console print format
 
 
