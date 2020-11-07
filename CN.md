@@ -1,28 +1,26 @@
 
 
-[中文说明](./CN.md)
+gin的日志中间件，基于zap和lumberjack
 
-gin-logger middleware based on zap,lumberjack
+## 功能
 
-## Features
-
-+ [X] Allow self config log level, it will not print if less than config level, TRACE<DEBUG<INFO<WARN<ERROR<FATAL
-+ [ ] Allow custom field and print in every log
-+ [X] Easy to use
-+ [X] Allow manage log file name,size,backups,print format
-+ [] Fixed parameters, also get resId from gateway
-+ [X] Support json/console print format
++ [X] 允许自定义日志等级,小于该等级的日志都不打印
++ [X] 允许自定义日志字段，全局打印,todo
++ [X] 封装对外暴露的接口，越简单越好,done
++ [X] 允许管理日志文件路径、名字、大小、保存时间、打印格式、请求行
++ [ ] 允许自定义带的参数，类型，固定日志参数，获取网关id等内容
++ [X] 支持json和console两种格式打印
 
 
-## How to Use
+## 如何使用
 
-+ download
++ 下载
 
 ```
 go get -u github.com/AverageJoeWang/ginLogger
 ```
 
-+ use
++ 用法
 
     - config.json
     
@@ -95,7 +93,7 @@ func main() {
 }
 ```
 
-+ run
++ 运行
 
 ```
 go run main.go
@@ -103,13 +101,13 @@ go run main.go
 
 
 
-+ test
++ 测试
 
 ```shell script
 curl 127.0.0.1:8180/hello?resId=1000
 ```
 
-+ log file
++ 日志文件
 
 ```
 {"level":"INFO","time":"2020-11-07 17:10:58.967426","caller":"ginLogger/logger.go:74","msg":"/hello","status":200,"method":"GET","path":"/hello","query":"name=wlf","ip":"127.0.0.1","user-agent":"curl/7.68.0","resId":""}
@@ -117,14 +115,14 @@ curl 127.0.0.1:8180/hello?resId=1000
 {"level":"INFO","time":"2020-11-07 17:10:58.967482","caller":"ginLogger/logger.go:85","msg":"/hello","status":200,"method":"GET","path":"/hello","query":"name=wlf","ip":"127.0.0.1","user-agent":"curl/7.68.0","errors":"","costTime(s)":0.000070732,"resId":""}
 ```
 
-## Intro
+## 其他说明
 
-+ "level": default debug
-+ "filename": default "app.log"
-+ "maxsize": the maximum size in megabytes of the log file before it gets rotated. It defaults to 200 megabytes.
-+ "max_age": the maximum number of days to retain old log files,default 7 days
-+ "max_backups": is the maximum number of old log files to retain.
-+ "time_zone": time zone, default "Asia/Chongqing
-+ "time_format": default "2006-01-02 15:04:05.000000"
-+ "log_format": there two mode such as json/console，default json
++ "level": 日志等级，默认为debug
++ "filename": 日志文件名，需要自定义后缀，默认为"app.log"
++ "maxsize": 单个日志最大容量，默认为200MB
++ "max_age": 归档以后的日志保存天数，默认为7天
++ "max_backups": 最大归档日志数量，默认为30个
++ "time_zone": 时区，默认为"Asia/Chongqing
++ "time_format": 日志中的时间格式，默认为"2006-01-02 15:04:05.000000"
++ "log_format": 日志打印格式，分为json和console两种类型，默认为json格式
 
