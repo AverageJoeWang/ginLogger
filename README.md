@@ -21,6 +21,23 @@ go get github.com/AverageJoeWang/ginLogger
 + 使用
 
 
+```
+{
+  "mode": "debug",
+  "port": 8180,
+  "log": {
+    "level": "INFO",
+    "filename": "app.log",
+    "log_format": "console",
+    "maxsize": 200,
+    "max_age": 7,
+    "max_backups": 10,
+    "time_location": "Asia/Chongqing",
+    "time_format": "2006-01-02 15:04:05.000000"
+  }
+}
+```
+
 ```go
 // Conf 全局配置变量
 var Conf = new(Config)
