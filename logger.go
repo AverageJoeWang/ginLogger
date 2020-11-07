@@ -11,20 +11,45 @@ import (
 	"os"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"time"
 )
 
 var ginLogger *zap.Logger
 
-//区分不同的http方法，get的body可以读好多次，post的body只能读一次
+const (
+	resIdKey     = "resId"
+	statusKey    = "status"
+	methodKey    = "method"
+	pathKey      = "path"
+	queryKey     = "query"
+	ipKey        = "ip"
+	userAgentKey = "user-agent"
+	errorsKey    = "errors"
+	costTimeKey  = "costTime(s)"
+)
 
+var timeLocation string
+var logLevel string
+var mutex sync.Mutex
+var logLevelMap = map[string]int{
+	"TRACE": 1,
+	"DEBUG": 2,
+	"INFO":  3,
+	"WARN":  4,
+	"ERROR": 5,
+	"FATAL": 6,
+}
 
-
-//初始化日志
+//init logger
 func InitLogger(config *LogConfig) (err error) {
-	//初始化日志的文件、大小、保存时间
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check config
+	checkDefaultSetting(config)
+	//init
 	writeSyncer := getLogWriter(config.Filename, config.MaxSize, config.MaxBackups, config.MaxAge)
-	encoder := getEncoder()
+	encoder := getEncoder(config)
 	var l = new(zapcore.Level)
 	err = l.UnmarshalText([]byte(config.Level))
 	if err != nil {
@@ -33,20 +58,60 @@ func InitLogger(config *LogConfig) (err error) {
 	core := zapcore.NewCore(encoder, writeSyncer, l)
 
 	ginLogger = zap.New(core, zap.AddCaller())
-	zap.ReplaceGlobals(ginLogger) // 替换zap包中全局的logger实例，后续在其他包中只需使用zap.L()调用即可
-
+	zap.ReplaceGlobals(ginLogger)
 	return nil
 }
 
-//自定义设置
-func getEncoder() zapcore.Encoder {
+func checkDefaultSetting(config *LogConfig) {
+	//check time location
+	if config.TimeLocation == "" {
+		config.TimeLocation = "Asia/Chongqing"
+	}
+	timeLocation = config.TimeLocation
+	//check time format
+	if config.TimeFormat == "" {
+		config.TimeFormat = "2006-01-02 15:04:05.000000"
+	}
+	//check maxsize
+	if config.MaxSize == 0 {
+		config.MaxSize = 200
+	}
+	//check maxAge
+	if config.MaxAge == 0 {
+		config.MaxAge = 7
+	}
+	//check max_backups
+	config.MaxBackups = 30
+	if config.MaxBackups == 0 {
+	}
+	//check level
+	if config.Level == "" {
+		config.Level = "DEBUG"
+	}
+	logLevel = config.Level
+	//check log file name
+	if config.Filename == "" {
+		config.Filename = "app.log"
+	}
+	//check log format default json
+	if config.LogFormat == "" {
+		config.LogFormat = "json"
+	}
+}
+
+//self config
+func getEncoder(config *LogConfig) zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05.000000")
+	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout(config.TimeFormat)
 	encoderConfig.TimeKey = "time"
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.EncodeDuration = zapcore.SecondsDurationEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
-	return zapcore.NewJSONEncoder(encoderConfig)
+	if config.LogFormat == "json" {
+		return zapcore.NewJSONEncoder(encoderConfig)
+	}else {
+		return zapcore.NewConsoleEncoder(encoderConfig)
+	}
 }
 
 func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
@@ -59,40 +124,39 @@ func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.Write
 	return zapcore.AddSync(lumberJackLogger)
 }
 
-
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
+		loc, _ := time.LoadLocation(timeLocation)
+		start := time.Now().In(loc)
 		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
-		gateResId, _ := c.GetQuery("resId")
+		gateResId, _ := c.GetQuery(resIdKey)
 		ginLogger.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("resId", gateResId),
+			zap.Int(statusKey, c.Writer.Status()),
+			zap.String(methodKey, c.Request.Method),
+			zap.String(pathKey, path),
+			zap.String(queryKey, query),
+			zap.String(ipKey, c.ClientIP()),
+			zap.String(userAgentKey, c.Request.UserAgent()),
+			zap.String(resIdKey, gateResId),
 		)
 		c.Next()
 		cost := time.Since(start)
 		ginLogger.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("costTime(s)", cost),
-			zap.String("resId", gateResId),
+			zap.Int(statusKey, c.Writer.Status()),
+			zap.String(methodKey, c.Request.Method),
+			zap.String(pathKey, path),
+			zap.String(queryKey, query),
+			zap.String(ipKey, c.ClientIP()),
+			zap.String(userAgentKey, c.Request.UserAgent()),
+			zap.String(errorsKey, c.Errors.ByType(gin.ErrorTypePrivate).String()),
+			zap.Duration(costTimeKey, cost),
+			zap.String(resIdKey, gateResId),
 		)
 	}
 }
 
-
-// GinRecovery recover掉项目可能出现的panic
+// GinRecovery
 func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
