@@ -2,7 +2,7 @@ package ginLogger
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/natefinch/lumberjack"
+	"github.com/snowair/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"net"
