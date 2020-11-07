@@ -1,26 +1,27 @@
 
 
-### 日志组件功能
+## Features
 
-+ 1.允许自定义日志等级,小于该等级的日志都不打印,done
-+ 2.允许自定义日志字段，全局打印,todo
-+ 3.封装对外暴露的接口，越简单越好,done
-+ 4.允许管理日志文件路径、名字、大小、保存时间、打印格式、请求行,done
-+ 5.允许自定义带的参数，类型，固定日志参数，生成独一无二的请求id，获取网关id等内容,todo
-+ 6.支持json和console两种格式打印，done
++ [X] 允许自定义日志等级,小于该等级的日志都不打印
++ [X] 允许自定义日志字段，全局打印,todo
++ [X] 封装对外暴露的接口，越简单越好,done
++ [X] 允许管理日志文件路径、名字、大小、保存时间、打印格式、请求行
++ [ ] 允许自定义带的参数，类型，固定日志参数，获取网关id等内容
++ [X] 支持json和console两种格式打印
 
 
-## 使用
+## How to Use
 
-+ 下载
++ download
 
 ```
-go get github.com/AverageJoeWang/ginLogger
+go get -u github.com/AverageJoeWang/ginLogger
 ```
 
-+ 使用
++ use
 
-
+    - config.json
+    
 ```
 {
   "mode": "debug",
@@ -37,6 +38,8 @@ go get github.com/AverageJoeWang/ginLogger
   }
 }
 ```
+
+    + main.go
 
 ```go
 package main
@@ -88,14 +91,21 @@ func main() {
 }
 ```
 
-+ 测试
++ run
 
-```shell script
-curl 127.0.0.1:8180/hello
+```
+go run main.go
 ```
 
-+ 日志
 
+
++ test
+
+```shell script
+curl 127.0.0.1:8180/hello?resId=1000
+```
+
++ log file
 
 ```
 {"level":"INFO","time":"2020-11-07 17:10:58.967426","caller":"ginLogger/logger.go:74","msg":"/hello","status":200,"method":"GET","path":"/hello","query":"name=wlf","ip":"127.0.0.1","user-agent":"curl/7.68.0","resId":""}
@@ -103,17 +113,14 @@ curl 127.0.0.1:8180/hello
 {"level":"INFO","time":"2020-11-07 17:10:58.967482","caller":"ginLogger/logger.go:85","msg":"/hello","status":200,"method":"GET","path":"/hello","query":"name=wlf","ip":"127.0.0.1","user-agent":"curl/7.68.0","errors":"","costTime(s)":0.000070732,"resId":""}
 ```
 
-## 说明
+## Intro
 
-```go
-type LogConfig struct {
-	Level        string `json:"level"`       //default debug
-	Filename     string `json:"filename"`    //default "app.log"
-	MaxSize      int    `json:"maxsize"`     //the maximum size in megabytes of the log file before it gets rotated. It defaults to 200 megabytes.
-	MaxAge       int    `json:"max_age"`     //the maximum number of days to retain old log files,default 7 days
-	MaxBackups   int    `json:"max_backups"` //is the maximum number of old log files to retain.
-	TimeLocation string `json:"time_zone"`   //time zone, default "Asia/Chongqing
-	TimeFormat   string `json:"time_format"` //default 2006-01-02 15:04:05.000000
-	LogFormat 	string	`json:"log_format"`//there two mode such as json/console，default json
-}
-```
++ "level": default debug
++ "filename": default "app.log"
++ "maxsize": the maximum size in megabytes of the log file before it gets rotated. It defaults to 200 megabytes.
++ "max_age": the maximum number of days to retain old log files,default 7 days
++ "max_backups": is the maximum number of old log files to retain.
++ "time_zone": time zone, default "Asia/Chongqing
++ "time_format": default "2006-01-02 15:04:05.000000"
++ "log_format": there two mode such as json/console，default json
+
