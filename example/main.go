@@ -24,11 +24,11 @@ func main()  {
 	r.GET("/hello", func(c *gin.Context) {
 		// 假设你有一些数据需要记录到日志中
 		var (
-			name = "q1mi"
-			age  = 18
+			name = "oliver"
+			age  = 27
 		)
 		// 记录日志并使用zap.Xxx(key, val)记录相关字段
-		zap.L().Debug("this is hello func", zap.String("user", name), zap.Int("age", age))
+		zap.L().Debug("this is hello", zap.String("user", name), zap.Int("age", age))
 
 		c.String(http.StatusOK, "hello averagejoe.wang\n")
 	})
